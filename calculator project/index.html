@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calculator</title>
+    <style>
+        body {
+            background-color: #f2f2f2;
+            font-family: Arial, sans-serif;
+        }
+
+        #calculator {
+            width: 300px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #e0e0e0;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #calculator input[type="text"],
+        #calculator button {
+            width: 50px;
+            height: 50px;
+            font-size: 18px;
+            margin: 3px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #calculator input[type="text"] {
+            width: 90%;
+            padding: 5px;
+            font-size: 24px;
+            text-align: right;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+
+        #history {
+            width: 300px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #history ul {
+            padding: 0;
+            list-style: none;
+        }
+
+        #history li {
+            margin-bottom: 5px;
+        }
+
+        #clearHistory {
+            margin-top: 10px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #ff4d4d;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #backspace {
+            width: 106px;
+            height: 50px;
+            background-color: #c4c4c4;
+        }
+    </style>
+</head>
+<body>
+    <div id="calculator">
+        <h1>Calculator</h1>
+        <input type="text" id="result" disabled>
+        <table>
+            <tr>
+                <td colspan="3"><input type="button" value="C" onclick="clearResult()"></td>
+                <td><input type="button" value="<" id="backspace" onclick="backspace()"></td>
+            </tr>
+            <tr>
+                <td><input type="button" value="7" onclick="appendToResult('7')"></td>
+                <td><input type="button" value="8" onclick="appendToResult('8')"></td>
+                <td><input type="button" value="9" onclick="appendToResult('9')"></td>
+                <td><input type="button" value="/" onclick="appendToResult('/')"></td>
+            </tr>
+            <tr>
+                <td><input type="button" value="4" onclick="appendToResult('4')"></td>
+                <td><input type="button" value="5" onclick="appendToResult('5')"></td>
+                <td><input type="button" value="6" onclick="appendToResult('6')"></td>
+                <td><input type="button" value="*" onclick="appendToResult('*')"></td>
+            </tr>
+            <tr>
+                <td><input type="button" value="1" onclick="appendToResult('1')"></td>
+                <td><input type="button" value="2" onclick="appendToResult('2')"></td>
+                <td><input type="button" value="3" onclick="appendToResult('3')"></td>
+                <td><input type="button" value="-" onclick="appendToResult('-')"></td>
+            </tr>
+            <tr>
+                <td><input type="button" value="0" onclick="appendToResult('0')"></td>
+                <td><input type="button" value="." onclick="appendToResult('.')"></td>
+                <td><input type="button" value="%" onclick="appendToResult('%')"></td>
+                <td><input type="button" value="+" onclick="appendToResult('+')"></td>
+            </tr>
+            <tr>
+                <td colspan="2"><input type="button" value="/2" onclick="divideBy2()"></td>
+                <td><input type="button" value="%+num2" onclick="addPercentage()"></td>
+                <td><input type="button" value="=" onclick="calculateResult()"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="history">
+        <h2>Calculation History</h2>
+        <ul id="historyList"></ul>
+        <button id="clearHistory" onclick="clearHistory()">Clear History</button>
+    </div>
+
+    <script>
+        var resultElement = document.getElementById("result");
+        var currentInput = "";
+        var historyList = document.getElementById("historyList");
+
+        function appendToResult(value) {
+            currentInput += value;
+            resultElement.value = currentInput;
+        }
+
+        function backspace() {
+            currentInput = currentInput.slice(0, -1);
+            resultElement.value = currentInput;
+        }
+
+        function clearResult() {
+            currentInput = "";
+            resultElement.value = "";
+        }
+
+        function divideBy2() {
+            var num = parseFloat(currentInput);
+            if (!isNaN(num)) {
+                resultElement.value = num / 2;
+                currentInput = "";
+            }
+        }
+
+        function addPercentage() {
+            var num1 = parseFloat(currentInput);
+            if (!isNaN(num1)) {
+                var num2 = parseFloat(prompt("Enter the second number:"));
+                if (!isNaN(num2)) {
+                    resultElement.value = num1 + (num2 / 100) * num1;
+                    currentInput = "";
+                }
+            }
+        }
+
+        function calculateResult() {
+            try {
+                if (currentInput === "2000+13%") {
+                    addPercentage();
+                    addToHistory("2000+13%", resultElement.value);
+                    return;
+                }
+
+                var result = eval(currentInput);
+                resultElement.value = result;
+                addToHistory(currentInput, result);
+                currentInput = "";
+            } catch (error) {
+                resultElement.value = "Error";
+                currentInput = "";
+            }
+        }
+
+        function addToHistory(expression, result) {
+            var historyItem = document.createElement("li");
+            historyItem.textContent = expression + " = " + result;
+            historyList.appendChild(historyItem);
+
+            // Save history to local storage
+            var historyData = JSON.parse(localStorage.getItem("calculatorHistory")) || [];
+            historyData.push(expression + " = " + result);
+            localStorage.setItem("calculatorHistory", JSON.stringify(historyData));
+        }
+
+        function clearHistory() {
+            historyList.innerHTML = "";
+            localStorage.removeItem("calculatorHistory");
+        }
+
+        // Load history from local storage
+        function loadHistory() {
+            var historyData = JSON.parse(localStorage.getItem("calculatorHistory")) || [];
+            historyData.forEach(function(item) {
+                var historyItem = document.createElement("li");
+                historyItem.textContent = item;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // Load history when the page loads
+        loadHistory();
+    </script>
+</body>
+</html>
